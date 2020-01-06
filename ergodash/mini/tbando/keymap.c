@@ -14,7 +14,13 @@ enum custom_keycodes {
   SETTING
 };
 
-#define EISU LALT(KC_GRV)
+// Layer related keycodes
+#define SYMBOL   MO(_SYMBOL)
+#define FN_MOVE  MO(_FN_MOVE)
+
+// Fillers to make layering more clear
+#define _______ KC_TRNS
+#define XXXXXXX KC_NO
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_QWERTY] = LAYOUT( \
