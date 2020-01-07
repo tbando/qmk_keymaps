@@ -127,7 +127,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
     case KC_LCTRL:
       lctrl_pressed = false;
-      return false;
+      return true;
     }
   }
   return true;
