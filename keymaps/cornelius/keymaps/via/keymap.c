@@ -17,6 +17,7 @@
 
 enum custom_keycodes {
   KC_BSES = SAFE_RANGE, // "\", when ESC with KC_LCTL
+  KC_HBSP // "H", when back space with KC_LCTL
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -24,7 +25,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+
        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSES,
     //|--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------|
-       KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+       KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_HBSP, KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
     //|--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------|
        KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------|
@@ -70,6 +71,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 static bool lctrl_pressed = false;
+static short int kc_original;
+static short int kc_modified;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case KC_LCTL:
@@ -82,18 +85,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
       return false;
       break;
-    // back slash and escape key
+
+    // custom keys with KC_LCTL
     case KC_BSES:
+    case KC_HBSP:
+      switch(keycode) {
+        case KC_BSES:
+          kc_original = KC_BSLS;
+          kc_modified = KC_ESC;
+          break;
+        case KC_HBSP:
+          kc_original = KC_H;
+          kc_modified = KC_BSPC;
+          break;
+      }
       if (record->event.pressed) {
         if (lctrl_pressed) {
           unregister_code(KC_LCTL);
-          register_code(KC_ESC);
+          register_code(kc_modified);
         } else {
-          register_code(KC_BSLS);
+          register_code(kc_original);
         }
       } else {
-        unregister_code(KC_ESC);
-        unregister_code(KC_BSLS);
+        unregister_code(kc_original);
+        unregister_code(kc_modified);
         if (lctrl_pressed) {
           register_code(KC_LCTL);
         }
