@@ -1,0 +1,54 @@
+name: build
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout qmk/qmk_firmware
+        uses: actions/checkout@v4
+        with:
+          repository: qmk/qmk_firmware
+          submodules: true
+
+      - name: checkout tbando/qmk_keymaps
+        uses: actions/checkout@v4
+        with:
+          repository: tbando/qmk_keymaps
+          path: ./tmp
+
+      - name: move keymaps dir into qmk_firmware
+        run: |
+          set -eux
+          cp -pr ./tmp/keymaps ./keyboards/tbando
+
+      - name: build
+        run: |
+          set -eux
+          TARGETS=$(find ./keyboards/tbando -mindepth 3 -maxdepth 3 -type d  | awk -F'/' '{print "tbando/"$4":"$6}')
+          for t in $TARGETS; do
+            util/docker_build.sh "${t}"
+          done
+          rm -rf ./tmp/dist/*
+          cp *.hex ./tmp/dist/
+
+      - name: get short SHA
+        run: |
+          set -eux
+          LONG_SHA=${{ github.sha }}
+          echo "SHORT_SHA=${LONG_SHA::7}" >> ${GITHUB_ENV}
+
+      - name: commit firmware
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          message: 'update firmware (${{ env.SHORT_SHA }})'
+          cwd: ./tmp
+          push: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
