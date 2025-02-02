@@ -37,6 +37,7 @@ jobs:
           done
           rm -rf ./tmp/dist/*
           cp *.hex ./tmp/dist/
+          cp *.uf2 ./tmp/dist/
 
       - name: get short SHA
         run: |
